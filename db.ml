@@ -8,6 +8,53 @@ let hardcoded_designers = Hashtbl.create 10
 
 let hardcoded_ratings = Hashtbl.create 10
 
+let get_all_games = Hashtbl.to_seq hardcoded_games
+
+let get_all_members = Hashtbl.to_seq hardcoded_members
+
+let get_all_designers = Hashtbl.to_seq hardcoded_designers
+
+let get_game_by_id game_id = Hashtbl.find_opt hardcoded_games game_id
+
+let get_member_by_id member_id = Hashtbl.find_opt hardcoded_members member_id
+
+let rating_maps_by_member_id member_id =
+  Hashtbl.fold
+    (fun _ v acc -> if v.rm_member_id = member_id then v :: acc else acc)
+    hardcoded_ratings []
+
+let rating_maps_by_game_id game_id =
+  Hashtbl.fold
+    (fun _ v acc -> if v.rm_game_id = game_id then v :: acc else acc)
+    hardcoded_ratings []
+
+let game_ratings_of_rating_maps = function
+  | [] -> []
+  | xs ->
+      List.map
+        (fun rm ->
+          match
+            Hashtbl.find_opt hardcoded_games (string_of_int rm.rm_game_id)
+          with
+          | None -> None
+          | Some game -> Some { game; rating = rm.rm_rating })
+        xs
+
+let upsert_game_rating game_id member_id rating =
+  let updated = ref false in
+  Hashtbl.iter
+    (fun _ v ->
+      if v.rm_member_id = member_id && v.rm_game_id = game_id then (
+        v.rm_rating <- rating;
+        updated := true)
+      else ())
+    hardcoded_ratings;
+  if !updated then ()
+  else
+    Hashtbl.replace hardcoded_ratings
+      (string_of_int @@ Hashtbl.length hardcoded_ratings)
+      { rm_rating = rating; rm_member_id = member_id; rm_game_id = game_id }
+
 let () =
   Hashtbl.add hardcoded_members "37"
     { member_id = 37; member_name = "curiousattemptbunny"; ratings = None };
@@ -110,50 +157,3 @@ let () =
     { rm_member_id = 2812; rm_game_id = 1237; rm_rating = 4 };
   Hashtbl.add hardcoded_ratings "6"
     { rm_member_id = 37; rm_game_id = 1237; rm_rating = 5 }
-
-let get_all_games = Hashtbl.to_seq hardcoded_games
-
-let get_all_members = Hashtbl.to_seq hardcoded_members
-
-let get_all_designers = Hashtbl.to_seq hardcoded_designers
-
-let get_game_by_id game_id = Hashtbl.find_opt hardcoded_games game_id
-
-let get_member_by_id member_id = Hashtbl.find_opt hardcoded_members member_id
-
-let rating_maps_by_member_id member_id =
-  Hashtbl.fold
-    (fun _ v acc -> if v.rm_member_id = member_id then v :: acc else acc)
-    hardcoded_ratings []
-
-let rating_maps_by_game_id game_id =
-  Hashtbl.fold
-    (fun _ v acc -> if v.rm_game_id = game_id then v :: acc else acc)
-    hardcoded_ratings []
-
-let game_ratings_of_rating_maps = function
-  | [] -> []
-  | xs ->
-      List.map
-        (fun rm ->
-          match
-            Hashtbl.find_opt hardcoded_games (string_of_int rm.rm_game_id)
-          with
-          | None -> None
-          | Some game -> Some { game; rating = rm.rm_rating })
-        xs
-
-let upsert_game_rating game_id member_id rating =
-  let updated = ref false in
-  Hashtbl.iter
-    (fun _ v ->
-      if v.rm_member_id = member_id && v.rm_game_id = game_id then (
-        v.rm_rating <- rating;
-        updated := true)
-      else ())
-    hardcoded_ratings;
-  if !updated then ()
-  else
-    Hashtbl.replace hardcoded_ratings
-      (string_of_int @@ Hashtbl.length hardcoded_ratings)
-      { rm_rating = rating; rm_member_id = member_id; rm_game_id = game_id }

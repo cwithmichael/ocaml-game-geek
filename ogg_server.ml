@@ -141,7 +141,7 @@ let member =
 
 let ogg_schema =
   Graphql_lwt.Schema.(
-    schema
+    schema ~query_name:"Ocaml Game Geek"
       [
         field "game" ~doc:"Select a BoardGame by its unique id, if it exists."
           ~typ:Lazy.(force board_game)
