@@ -1,20 +1,22 @@
 open Db
-open Types
-
+open Ogg_types
 
 let rating_average = function
-| [] -> None
-| ratings ->
-    let n = List.length ratings in
-    Some
-      {
-        count = n;
-        average =
-          List.fold_left
-            (fun acc rm -> acc +. float_of_int rm.rm_rating)
-            0.0 ratings
-          /. float_of_int n;
-      }
+  | [] -> None
+  | ratings ->
+      let n = List.length ratings in
+      Some
+        {
+          count = n;
+          average =
+            List.fold_left
+              (fun acc rm -> acc +. float_of_int rm.rm_rating)
+              0.0 ratings
+            /. float_of_int n;
+        }
+
+let rate_game game_id member_id rating =
+  upsert_game_rating game_id member_id rating
 
 let game_rating_summary =
   Graphql_lwt.Schema.(
@@ -126,11 +128,15 @@ let member =
             ~resolve:(fun _ member -> member.member_name);
           field "ratings"
             ~doc:"List of games and ratings provided by this member."
-            ~typ:(list (non_null game_rating))
+            ~typ:(list game_rating)
             ~args:Arg.[]
             ~resolve:(fun _ member ->
-              game_ratings_of_rating_maps
-              @@ rating_maps_by_member_id member.member_id);
+              match
+                game_ratings_of_rating_maps
+                @@ rating_maps_by_member_id member.member_id
+              with
+              | [] -> Some []
+              | ratings -> Some ratings);
         ]))
 
 let ogg_schema =
@@ -143,12 +149,7 @@ let ogg_schema =
           ~resolve:(fun _ () id ->
             match id with
             | None -> None
-            | Some id' -> (
-                match
-                  List.find_opt (fun { id; _ } -> id = id') get_all_games
-                with
-                | None -> None
-                | Some board_game -> Some board_game));
+            | Some id' -> get_game_by_id (string_of_int id'));
         field "member"
           ~doc:
             "Select an OCaml Game Geek Member by their unique id, if it exists."
@@ -157,11 +158,38 @@ let ogg_schema =
           ~resolve:(fun _ () member_id ->
             match member_id with
             | None -> None
-            | Some member_id' -> (
-                match
-                  List.assoc_opt (string_of_int member_id') get_all_members
-                with
-                | None -> None
-                | Some member -> Some member));
-      ])
+            | Some member_id' -> get_member_by_id (string_of_int member_id'));
+      ]
+      ~mutation_name:"rate_game"
+      ~mutations:
+        [
+          field "rate_game"
+            ~doc:
+              "Establishes a rating of a board game, by a Member. On success \
+               (the game and member both exist), selects the BoardGame. \
+               Otherwise, selects nil and an error."
+            ~typ:Lazy.(force board_game)
+            ~args:
+              Arg.
+                [
+                  arg "game_id" ~typ:(non_null int);
+                  arg "member_id" ~typ:(non_null int);
+                  arg "rating" ~typ:(non_null int);
+                ]
+            ~resolve:(fun _ () game_id member_id rating ->
+              rate_game game_id member_id rating;
+              get_game_by_id (string_of_int game_id));
+        ])
 
+let default_query =
+  "{\\n  game(id: 1237) {\\n    name\\n    rating_summary {\\n    count\\n \
+   average\\n } \\n  }\\n}\\n"
+
+let () =
+  Dream.run ~interface:"0.0.0.0"
+  @@ Dream.logger @@ Dream.origin_referrer_check
+  @@ Dream.router
+       [
+         Dream.any "/graphql" (Dream.graphql Lwt.return ogg_schema);
+         Dream.get "/" (Dream.graphiql ~default_query "/graphql");
+       ]

@@ -21,10 +21,14 @@ and board_game = {
 
 type game_rating = { game : board_game; rating : int }
 
-and member = {
+type member = {
   member_id : int;
   member_name : string;
   ratings : game_rating list option;
 }
 
-type rating_map = { rm_member_id : int; rm_game_id : int; rm_rating : int }
+type rating_map = {
+  rm_member_id : int;
+  rm_game_id : int;
+  mutable rm_rating : int;
+}

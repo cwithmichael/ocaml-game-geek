@@ -12,6 +12,6 @@
     "esy-openssl": "esy-packages/esy-openssl#619ae2d46ca981ec26ab3287487ad98b157a01d1"
   },
   "scripts": {
-    "start": "dune exec --root . ./ogg.exe"
+    "start": "dune exec --root . ./ogg_server.exe"
   }
 }

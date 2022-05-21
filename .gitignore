@@ -2,3 +2,4 @@ node_modules/
 _esy/
 esy.lock/
 _build/
+settings.json
