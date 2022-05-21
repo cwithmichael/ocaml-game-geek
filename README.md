@@ -19,7 +19,7 @@ OCaml Game Geek is centered around building a GraphQL server that mimics some of
 
 > docker build . -t ogg
 
-> docker run -t -i -p 8080:8080 --rm ogg
+> docker run -it -p 8080:8080 --rm ogg
 
 You should be able to now go to http://localhost:8080 in your web browser and play around with the schema.
 
