@@ -159,6 +159,23 @@ let ogg_schema =
             match member_id with
             | None -> None
             | Some member_id' -> get_member_by_id (string_of_int member_id'));
+        field "games" ~doc:"Get all BoardGames"
+          ~typ:(non_null (list Lazy.(force board_game)))
+          ~args:Arg.[]
+          ~resolve:(fun _ () ->
+            Seq.fold_left (fun acc x -> Some (snd x) :: acc) [] get_all_games);
+        field "members" ~doc:"Get all members"
+          ~typ:(non_null (list member))
+          ~args:Arg.[]
+          ~resolve:(fun _ () ->
+            Seq.fold_left (fun acc x -> Some (snd x) :: acc) [] get_all_members);
+        field "designers" ~doc:"Get all designers"
+          ~typ:(non_null (list Lazy.(force designer)))
+          ~args:Arg.[]
+          ~resolve:(fun _ () ->
+            Seq.fold_left
+              (fun acc x -> Some (snd x) :: acc)
+              [] get_all_designers);
       ]
       ~mutation_name:"rate_game"
       ~mutations:

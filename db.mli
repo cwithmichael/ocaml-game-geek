@@ -12,8 +12,6 @@ val get_all_designers : (string * designer) Seq.t
 
 val get_all_members : (string * member) Seq.t
 
-val get_all_ratings : (string * rating_map) Seq.t
-
 val get_game_by_id : string -> board_game option
 
 val get_member_by_id : string -> member option

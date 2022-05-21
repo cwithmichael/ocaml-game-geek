@@ -117,8 +117,6 @@ let get_all_members = Hashtbl.to_seq hardcoded_members
 
 let get_all_designers = Hashtbl.to_seq hardcoded_designers
 
-let get_all_ratings = Hashtbl.to_seq hardcoded_ratings
-
 let get_game_by_id game_id = Hashtbl.find_opt hardcoded_games game_id
 
 let get_member_by_id member_id = Hashtbl.find_opt hardcoded_members member_id
