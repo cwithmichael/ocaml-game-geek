@@ -41,19 +41,10 @@ let game_ratings_of_rating_maps = function
         xs
 
 let upsert_game_rating game_id member_id rating =
-  let updated = ref false in
-  Hashtbl.iter
-    (fun _ v ->
-      if v.rm_member_id = member_id && v.rm_game_id = game_id then (
-        v.rm_rating <- rating;
-        updated := true)
-      else ())
-    hardcoded_ratings;
-  if !updated then ()
-  else
-    Hashtbl.replace hardcoded_ratings
-      (string_of_int @@ Hashtbl.length hardcoded_ratings)
-      { rm_rating = rating; rm_member_id = member_id; rm_game_id = game_id }
+  let new_rating =
+    { rm_rating = rating; rm_member_id = member_id; rm_game_id = game_id }
+  in
+  Hashtbl.replace hardcoded_ratings (member_id, game_id) new_rating
 
 let () =
   Hashtbl.add hardcoded_members "37"
@@ -145,15 +136,16 @@ let () =
           Hashtbl.find hardcoded_designers "202";
         ];
     };
-  Hashtbl.add hardcoded_ratings "1"
+
+  Hashtbl.add hardcoded_ratings (37, 1234)
     { rm_member_id = 37; rm_game_id = 1234; rm_rating = 3 };
-  Hashtbl.add hardcoded_ratings "2"
+  Hashtbl.add hardcoded_ratings (1410, 1234)
     { rm_member_id = 1410; rm_game_id = 1234; rm_rating = 5 };
-  Hashtbl.add hardcoded_ratings "3"
+  Hashtbl.add hardcoded_ratings (1410, 1236)
     { rm_member_id = 1410; rm_game_id = 1236; rm_rating = 4 };
-  Hashtbl.add hardcoded_ratings "4"
+  Hashtbl.add hardcoded_ratings (1410, 1237)
     { rm_member_id = 1410; rm_game_id = 1237; rm_rating = 4 };
-  Hashtbl.add hardcoded_ratings "5"
+  Hashtbl.add hardcoded_ratings (2812, 1237)
     { rm_member_id = 2812; rm_game_id = 1237; rm_rating = 4 };
-  Hashtbl.add hardcoded_ratings "6"
+  Hashtbl.add hardcoded_ratings (37, 1237)
     { rm_member_id = 37; rm_game_id = 1237; rm_rating = 5 }
