@@ -221,7 +221,7 @@ let mutation_error_template (_error : Dream.error) _ suggested_response =
         | InvalidId s | InvalidRating s ->
             Dream.set_status suggested_response `Bad_Request;
             s
-        | _ -> "Unkonwn Error")
+        | _ -> "Unknown Error")
     | _ -> Dream.status_to_string status
   in
   Dream.set_header suggested_response "Content-Type" Dream.application_json;
