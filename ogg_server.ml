@@ -149,7 +149,7 @@ let member =
 
 let ogg_schema =
   Graphql_lwt.Schema.(
-    schema ~query_name:"Ocaml Game Geek"
+    schema ~query_name:"OcamlGameGeek"
       [
         field "game" ~doc:"Select a BoardGame by its unique id, if it exists."
           ~typ:Lazy.(force board_game)
@@ -211,6 +211,7 @@ let default_query =
 let mutation_error_template (_error : Dream.error) _ suggested_response =
   let reason = match _error.condition with `Exn (Failure e) -> e | _ -> "" in
   Dream.set_header suggested_response "Content-Type" Dream.application_json;
+  Dream.set_status suggested_response `Bad_Request;
   Dream.set_body suggested_response
   @@ Printf.sprintf "{\"error_message\" : \"%s\"}" reason;
   Lwt.return suggested_response
