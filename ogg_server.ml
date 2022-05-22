@@ -15,6 +15,10 @@ let rating_average = function
             /. float_of_int n;
         }
 
+exception InvalidId of string
+
+exception InvalidRating of string
+
 let rate_game game_id member_id rating =
   if rating >= 1 && rating <= 5 then
     let game = get_game_by_id (string_of_int game_id) in
@@ -23,8 +27,8 @@ let rate_game game_id member_id rating =
     | Some _, Some _ ->
         upsert_game_rating game_id member_id rating;
         game
-    | _ -> failwith "Invalid game_id or member_id"
-  else failwith "Invalid Rating"
+    | _ -> raise @@ InvalidId "Invalid game_id or member_id"
+  else raise @@ InvalidRating "Invalid Rating"
 
 let game_rating_summary =
   Graphql_lwt.Schema.(
@@ -209,11 +213,20 @@ let default_query =
    average\\n } \\n  }\\n}\\n"
 
 let mutation_error_template (_error : Dream.error) _ suggested_response =
-  let reason = match _error.condition with `Exn (Failure e) -> e | _ -> "" in
+  let status = Dream.status suggested_response in
+  let reason =
+    match _error.condition with
+    | `Exn e -> (
+        match e with
+        | InvalidId s | InvalidRating s ->
+            Dream.set_status suggested_response `Bad_Request;
+            s
+        | _ -> "Unkonwn Error")
+    | _ -> Dream.status_to_string status
+  in
   Dream.set_header suggested_response "Content-Type" Dream.application_json;
-  Dream.set_status suggested_response `Bad_Request;
   Dream.set_body suggested_response
-  @@ Printf.sprintf "{\"error_message\" : \"%s\"}" reason;
+  @@ Printf.sprintf "{\"errors\" : [{\"message\" : \"%s\"}]}" reason;
   Lwt.return suggested_response
 
 let () =
