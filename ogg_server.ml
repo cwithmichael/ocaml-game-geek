@@ -16,13 +16,15 @@ let rating_average = function
         }
 
 let rate_game game_id member_id rating =
-  let game = get_game_by_id (string_of_int game_id) in
-  let member = get_member_by_id (string_of_int member_id) in
-  match (game, member) with
-  | Some _, Some _ ->
-      upsert_game_rating game_id member_id rating;
-      game
-  | _ -> None
+  if rating >= 1 && rating <= 5 then
+    let game = get_game_by_id (string_of_int game_id) in
+    let member = get_member_by_id (string_of_int member_id) in
+    match (game, member) with
+    | Some _, Some _ ->
+        upsert_game_rating game_id member_id rating;
+        game
+    | _ -> None
+  else None
 
 let game_rating_summary =
   Graphql_lwt.Schema.(
