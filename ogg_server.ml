@@ -23,8 +23,8 @@ let rate_game game_id member_id rating =
     | Some _, Some _ ->
         upsert_game_rating game_id member_id rating;
         game
-    | _ -> None
-  else None
+    | _ -> failwith "Invalid game_id or member_id"
+  else failwith "Invalid Rating"
 
 let game_rating_summary =
   Graphql_lwt.Schema.(
@@ -208,8 +208,16 @@ let default_query =
   "{\\n  game(id: 1237) {\\n    name\\n    rating_summary {\\n    count\\n \
    average\\n } \\n  }\\n}\\n"
 
+let mutation_error_template (_error : Dream.error) _ suggested_response =
+  let reason = match _error.condition with `Exn (Failure e) -> e | _ -> "" in
+  Dream.set_header suggested_response "Content-Type" Dream.application_json;
+  Dream.set_body suggested_response
+  @@ Printf.sprintf "{\"error_message\" : \"%s\"}" reason;
+  Lwt.return suggested_response
+
 let () =
   Dream.run ~interface:"0.0.0.0"
+    ~error_handler:(Dream.error_template mutation_error_template)
   @@ Dream.logger @@ Dream.origin_referrer_check
   @@ Dream.router
        [
