@@ -16,7 +16,13 @@ let rating_average = function
         }
 
 let rate_game game_id member_id rating =
-  upsert_game_rating game_id member_id rating
+  let game = get_game_by_id (string_of_int game_id) in
+  let member = get_member_by_id (string_of_int member_id) in
+  match (game, member) with
+  | Some _, Some _ ->
+      upsert_game_rating game_id member_id rating;
+      game
+  | _ -> None
 
 let game_rating_summary =
   Graphql_lwt.Schema.(
@@ -183,8 +189,7 @@ let ogg_schema =
           field "rate_game"
             ~doc:
               "Establishes a rating of a board game, by a Member. On success \
-               (the game and member both exist), selects the BoardGame. \
-               Otherwise, selects nil and an error."
+               (the game and member both exist), selects the BoardGame."
             ~typ:Lazy.(force board_game)
             ~args:
               Arg.
@@ -194,8 +199,7 @@ let ogg_schema =
                   arg "rating" ~typ:(non_null int);
                 ]
             ~resolve:(fun _ () game_id member_id rating ->
-              rate_game game_id member_id rating;
-              get_game_by_id (string_of_int game_id));
+              rate_game game_id member_id rating);
         ])
 
 let default_query =
