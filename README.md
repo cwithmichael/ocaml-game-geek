@@ -10,16 +10,22 @@ OCaml Game Geek is centered around building a GraphQL server that mimics some of
 
 ## How to run
 
+### npm
 > npm install esy && npx esy
 
 > npx esy start
 
 
-#### Or if you prefer Docker
+### Or if you prefer Docker
 
+**Build**
 > docker build . -t ogg
 
-> docker run -it -p 8080:8080 --rm ogg
+**Run**
+> docker run -d --name ogg -p 8080:8080 --rm ogg
+
+**Stop**
+> docker stop ogg
 
 You should be able to now go to http://localhost:8080 in your web browser and play around with the schema.
 
