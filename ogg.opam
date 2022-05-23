@@ -1,5 +1,11 @@
 opam-version: "2.0"
-
+description: """
+OCaml Game Geek is centered around building a GraphQL server that mimics some of
+the functionality of Board Game Geek. It is based on the Clojure tutorial
+Clojure Game Geek."""
+license: "MIT"
+author: "Michael Terrell <cwithmichael@gmail.com>"
+maintainer: "Michael Terrell <cwithmichael@gmail.com>"
 depends: [
     "ocaml" {>= "4.1.0"}
     "dune" {>= "2.9.0"}

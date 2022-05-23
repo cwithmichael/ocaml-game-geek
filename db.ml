@@ -33,9 +33,7 @@ let game_ratings_of_rating_maps = function
   | xs ->
       List.map
         (fun rm ->
-          match
-            Hashtbl.find_opt hardcoded_games (string_of_int rm.rm_game_id)
-          with
+          match Hashtbl.find_opt hardcoded_games rm.rm_game_id with
           | None -> None
           | Some game -> Some { game; rating = rm.rm_rating })
         xs
@@ -47,44 +45,44 @@ let upsert_game_rating game_id member_id rating =
   Hashtbl.replace hardcoded_ratings (member_id, game_id) new_rating
 
 let () =
-  Hashtbl.add hardcoded_members "37"
+  Hashtbl.add hardcoded_members 37
     { member_id = 37; member_name = "curiousattemptbunny"; ratings = None };
-  Hashtbl.add hardcoded_members "1410"
+  Hashtbl.add hardcoded_members 1410
     { member_id = 1410; member_name = "bleedingedge"; ratings = None };
-  Hashtbl.add hardcoded_members "2812"
+  Hashtbl.add hardcoded_members 2812
     { member_id = 2812; member_name = "missyo"; ratings = None };
 
-  Hashtbl.add hardcoded_designers "200"
+  Hashtbl.add hardcoded_designers 200
     {
       designer_id = 200;
       designer_name = "Kris Burm";
       url = Some "http://www.gipf.com/project_gipf/burm/burm.html";
       games = [];
     };
-  Hashtbl.add hardcoded_designers "201"
+  Hashtbl.add hardcoded_designers 201
     {
       designer_id = 201;
       designer_name = "Antoine Bauza";
       url = Some "http://www.antoinebauza.fr/";
       games = [];
     };
-  Hashtbl.add hardcoded_designers "202"
+  Hashtbl.add hardcoded_designers 202
     {
       designer_id = 202;
       designer_name = "Bruno Cathala";
       url = Some "http://www.bruno.com/";
       games = [];
     };
-  Hashtbl.add hardcoded_designers "203"
+  Hashtbl.add hardcoded_designers 203
     { designer_id = 203; designer_name = "Scott Almes"; url = None; games = [] };
-  Hashtbl.add hardcoded_designers "204"
+  Hashtbl.add hardcoded_designers 204
     {
       designer_id = 204;
       designer_name = "Donald X. Vaccarino";
       url = None;
       games = [];
     };
-  Hashtbl.add hardcoded_games "1234"
+  Hashtbl.add hardcoded_games 1234
     {
       id = 1234;
       name = "Zertz";
@@ -94,9 +92,9 @@ let () =
       min_players = Some 2;
       max_players = Some 2;
       play_time = None;
-      designers = [ Hashtbl.find hardcoded_designers "200" ];
+      designers = [ Hashtbl.find hardcoded_designers 200 ];
     };
-  Hashtbl.add hardcoded_games "1235"
+  Hashtbl.add hardcoded_games 1235
     {
       id = 1235;
       name = "Dominion";
@@ -106,9 +104,9 @@ let () =
       min_players = Some 2;
       max_players = None;
       play_time = None;
-      designers = [ Hashtbl.find hardcoded_designers "204" ];
+      designers = [ Hashtbl.find hardcoded_designers 204 ];
     };
-  Hashtbl.add hardcoded_games "1236"
+  Hashtbl.add hardcoded_games 1236
     {
       id = 1236;
       name = "Tiny Epic Galaxies";
@@ -118,9 +116,9 @@ let () =
       min_players = Some 1;
       max_players = Some 4;
       play_time = None;
-      designers = [ Hashtbl.find hardcoded_designers "203" ];
+      designers = [ Hashtbl.find hardcoded_designers 203 ];
     };
-  Hashtbl.add hardcoded_games "1237"
+  Hashtbl.add hardcoded_games 1237
     {
       id = 1237;
       name = "7 Wonders: Duel";
@@ -132,8 +130,8 @@ let () =
       play_time = None;
       designers =
         [
-          Hashtbl.find hardcoded_designers "201";
-          Hashtbl.find hardcoded_designers "202";
+          Hashtbl.find hardcoded_designers 201;
+          Hashtbl.find hardcoded_designers 202;
         ];
     };
 

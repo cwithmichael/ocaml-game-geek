@@ -21,8 +21,8 @@ exception InvalidRating of string
 
 let rate_game game_id member_id rating =
   if rating >= 1 && rating <= 5 then
-    let game = get_game_by_id (string_of_int game_id) in
-    let member = get_member_by_id (string_of_int member_id) in
+    let game = get_game_by_id game_id in
+    let member = get_member_by_id member_id in
     match (game, member) with
     | Some _, Some _ ->
         upsert_game_rating game_id member_id rating;
@@ -159,9 +159,7 @@ let ogg_schema =
           ~typ:Lazy.(force board_game)
           ~args:Arg.[ arg "id" ~typ:int ]
           ~resolve:(fun _ () id ->
-            match id with
-            | None -> None
-            | Some id' -> get_game_by_id (string_of_int id'));
+            match id with None -> None | Some id' -> get_game_by_id id');
         field "member"
           ~doc:
             "Select an OCaml Game Geek Member by their unique id, if it exists."
@@ -170,7 +168,7 @@ let ogg_schema =
           ~resolve:(fun _ () member_id ->
             match member_id with
             | None -> None
-            | Some member_id' -> get_member_by_id (string_of_int member_id'));
+            | Some member_id' -> get_member_by_id member_id');
         field "games" ~doc:"Get all BoardGames"
           ~typ:(non_null (list Lazy.(force board_game)))
           ~args:Arg.[]
