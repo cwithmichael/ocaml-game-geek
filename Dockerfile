@@ -1,16 +1,23 @@
-FROM node:16-bullseye-slim AS base
-RUN apt-get update && apt-get install -y libssl-dev curl git xz-utils \
-    lbzip2 gcc make
+FROM ocaml/opam:alpine as build
 
-FROM base AS build
-WORKDIR /build
-RUN npm install esy
-COPY esy.json .
-RUN npx esy solve
-RUN npx esy fetch
-RUN npx esy build-dependencies
+# Install system dependencies
+RUN sudo apk add --update libev-dev openssl-dev
 
+WORKDIR /home/opam
+
+# Install dependencies
+COPY ogg.opam ogg.opam
+RUN opam install . --deps-only
+
+# Build project
 COPY . .
-RUN npx esy build
+RUN opam exec -- dune build
+
+
+
+FROM alpine as run
+
+RUN apk add --update libev
+COPY --from=build /home/opam/_build/default/ogg_server.exe /bin/ogg_server
 EXPOSE 8080
-CMD ["npx", "esy", "start"]
+ENTRYPOINT ["/bin/ogg_server"]
