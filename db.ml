@@ -44,6 +44,14 @@ let upsert_game_rating game_id member_id rating =
   in
   Hashtbl.replace hardcoded_ratings (member_id, game_id) new_rating
 
+let member_id = ref 3000
+
+let add_member member_name =
+  member_id := !member_id + 1;
+  Hashtbl.add hardcoded_members !member_id
+    { member_id = !member_id; member_name; ratings = None };
+  Hashtbl.find hardcoded_members !member_id
+
 let () =
   Hashtbl.add hardcoded_members 37
     { member_id = 37; member_name = "curiousattemptbunny"; ratings = None };

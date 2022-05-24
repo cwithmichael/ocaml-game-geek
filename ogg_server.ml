@@ -153,7 +153,7 @@ let member =
 
 let ogg_schema =
   Graphql_lwt.Schema.(
-    schema ~query_name:"OCamlGameGeek"
+    schema ~query_name:"OCamlGameGeekQuery"
       [
         field "game" ~doc:"Select a BoardGame by its unique id, if it exists."
           ~typ:Lazy.(force board_game)
@@ -187,7 +187,7 @@ let ogg_schema =
               (fun acc x -> Some (snd x) :: acc)
               [] get_all_designers);
       ]
-      ~mutation_name:"rate_game"
+      ~mutation_name:"OCamlGameGeekMutation"
       ~mutations:
         [
           field "rate_game"
@@ -204,6 +204,9 @@ let ogg_schema =
                 ]
             ~resolve:(fun _ () game_id member_id rating ->
               rate_game game_id member_id rating);
+          field "add_member" ~doc:"Adds a new Member." ~typ:(non_null member)
+            ~args:Arg.[ arg "member_name" ~typ:(non_null string) ]
+            ~resolve:(fun _ () member_name -> add_member member_name);
         ])
 
 let default_query =

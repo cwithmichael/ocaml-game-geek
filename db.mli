@@ -17,3 +17,5 @@ val get_game_by_id : int -> board_game option
 val get_member_by_id : int -> member option
 
 val upsert_game_rating : int -> int -> int -> unit
+
+val add_member : string -> member
