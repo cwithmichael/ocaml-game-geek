@@ -7,7 +7,8 @@ license: "MIT"
 author: "Michael Terrell <cwithmichael@gmail.com>"
 maintainer: "Michael Terrell <cwithmichael@gmail.com>"
 depends: [
-    "ocaml" {>= "4.1.0"}
+    "ocaml" {>= "4.10.0"}
     "dune" {>= "2.9.0"}
-    "dream"
+    "graphql-lwt" {= "0.13.0"}
+    "dream" {= "1.0.0~alpha4"}
 ]

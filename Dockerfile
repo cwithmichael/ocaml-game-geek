@@ -1,4 +1,4 @@
-FROM ocaml/opam:alpine as build
+FROM ocaml/opam:alpine-ocaml-4.10 as build
 
 # Install system dependencies
 RUN sudo apk add --update libev-dev openssl-dev
