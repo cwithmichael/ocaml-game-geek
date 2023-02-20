@@ -16,7 +16,6 @@ let rating_average = function
         }
 
 exception InvalidId of string
-
 exception InvalidRating of string
 
 let rate_game game_id member_id rating =
@@ -33,7 +32,7 @@ let rate_game game_id member_id rating =
 let game_rating_summary =
   Graphql_lwt.Schema.(
     obj "game_rating_summary" ~doc:"Summary of ratings for a single game."
-      ~fields:(fun _ ->
+      ~fields:
         [
           field "count"
             ~doc:
@@ -47,89 +46,93 @@ let game_rating_summary =
             ~typ:(non_null float)
             ~args:Arg.[]
             ~resolve:(fun _ game_rating_summary -> game_rating_summary.average);
-        ]))
+        ])
 
-let rec board_game =
-  lazy
-    Graphql_lwt.Schema.(
-      obj "board_game" ~doc:"A physical or virtual board game."
-        ~fields:(fun _ ->
-          [
-            field "id" ~typ:(non_null int)
-              ~args:Arg.[]
-              ~resolve:(fun _ board_game -> board_game.id);
-            field "name" ~typ:(non_null string)
-              ~args:Arg.[]
-              ~resolve:(fun _ board_game -> board_game.name);
-            field "rating_summary" ~typ:game_rating_summary
-              ~args:Arg.[]
-              ~resolve:(fun _ board_game ->
-                rating_maps_by_game_id board_game.id |> rating_average);
-            field "summary" ~doc:"A one-line summary of the game." ~typ:string
-              ~args:Arg.[]
-              ~resolve:(fun _ board_game -> board_game.summary);
-            field "description" ~doc:"A long-form description of the game."
-              ~typ:string
-              ~args:Arg.[]
-              ~resolve:(fun _ board_game -> board_game.description);
-            field "designers" ~doc:"Designers who contributed to the game."
-              ~typ:(non_null (list (non_null Lazy.(force designer))))
-              ~args:Arg.[]
-              ~resolve:(fun _ board_game -> board_game.designers);
-            field "min_players"
-              ~doc:"The minimum number of players the game supports." ~typ:int
-              ~args:Arg.[]
-              ~resolve:(fun _ board_game -> board_game.min_players);
-            field "max_players"
-              ~doc:"The maximum number of players the game supports." ~typ:int
-              ~args:Arg.[]
-              ~resolve:(fun _ board_game -> board_game.max_players);
-            field "play_time" ~doc:"Play time, in minutes, for a typical game."
-              ~typ:int
-              ~args:Arg.[]
-              ~resolve:(fun _ board_game -> board_game.play_time);
-          ]))
-
-and designer =
-  lazy
-    Graphql_lwt.Schema.(
-      obj "designer"
-        ~doc:"A person who may have contributed to a board game design."
-        ~fields:(fun _ ->
-          [
-            field "designer_id" ~typ:(non_null int)
-              ~args:Arg.[]
-              ~resolve:(fun _ designer -> designer.designer_id);
-            field "designer_name" ~typ:(non_null string)
-              ~args:Arg.[]
-              ~resolve:(fun _ designer -> designer.designer_name);
-            field "url" ~doc:"Home page URL, if known." ~typ:string
-              ~args:Arg.[]
-              ~resolve:(fun _ designer -> designer.url);
-            field "games" ~doc:"Games designed by this designer."
-              ~typ:(non_null (list (non_null Lazy.(force board_game))))
-              ~args:Arg.[]
-              ~resolve:(fun _ designer -> designer.games);
-          ]))
+let designer, board_game =
+  Graphql_lwt.Schema.(
+    fix (fun recursive ->
+        let designer =
+          recursive.obj "designer"
+            ~doc:"A person who may have contributed to a board game design."
+            ~fields:(fun (_, board_game) ->
+              [
+                field "designer_id" ~typ:(non_null int)
+                  ~args:Arg.[]
+                  ~resolve:(fun _ designer -> designer.designer_id);
+                field "designer_name" ~typ:(non_null string)
+                  ~args:Arg.[]
+                  ~resolve:(fun _ designer -> designer.designer_name);
+                field "url" ~doc:"Home page URL, if known." ~typ:string
+                  ~args:Arg.[]
+                  ~resolve:(fun _ designer -> designer.url);
+                field "games" ~doc:"Games designed by this designer."
+                  ~typ:(non_null (list (non_null board_game)))
+                  ~args:Arg.[]
+                  ~resolve:(fun _ designer -> designer.games);
+              ])
+        in
+        let board_game =
+          recursive.obj "board_game" ~doc:"A physical or virtual board game."
+            ~fields:(fun (designer, _) ->
+              [
+                field "id" ~typ:(non_null int)
+                  ~args:Arg.[]
+                  ~resolve:(fun _ board_game -> board_game.id);
+                field "name" ~typ:(non_null string)
+                  ~args:Arg.[]
+                  ~resolve:(fun _ board_game -> board_game.name);
+                field "rating_summary" ~typ:game_rating_summary
+                  ~args:Arg.[]
+                  ~resolve:(fun _ board_game ->
+                    rating_maps_by_game_id board_game.id |> rating_average);
+                field "summary" ~doc:"A one-line summary of the game."
+                  ~typ:string
+                  ~args:Arg.[]
+                  ~resolve:(fun _ board_game -> board_game.summary);
+                field "description" ~doc:"A long-form description of the game."
+                  ~typ:string
+                  ~args:Arg.[]
+                  ~resolve:(fun _ board_game -> board_game.description);
+                field "designers" ~doc:"Designers who contributed to the game."
+                  ~typ:(non_null (list (non_null designer)))
+                  ~args:Arg.[]
+                  ~resolve:(fun _ board_game -> board_game.designers);
+                field "min_players"
+                  ~doc:"The minimum number of players the game supports."
+                  ~typ:int
+                  ~args:Arg.[]
+                  ~resolve:(fun _ board_game -> board_game.min_players);
+                field "max_players"
+                  ~doc:"The maximum number of players the game supports."
+                  ~typ:int
+                  ~args:Arg.[]
+                  ~resolve:(fun _ board_game -> board_game.max_players);
+                field "play_time"
+                  ~doc:"Play time, in minutes, for a typical game." ~typ:int
+                  ~args:Arg.[]
+                  ~resolve:(fun _ board_game -> board_game.play_time);
+              ])
+        in
+        (designer, board_game)))
 
 let game_rating =
   Graphql_lwt.Schema.(
     obj "game_rating" ~doc:"A member's rating of a particular game."
-      ~fields:(fun _ ->
+      ~fields:
         [
           field "game" ~doc:"The Game rated by the member."
-            ~typ:(non_null Lazy.(force board_game))
+            ~typ:(non_null board_game)
             ~args:Arg.[]
             ~resolve:(fun _ game_rating -> game_rating.game);
           field "rating" ~doc:"The rating as 1 to 5 stars." ~typ:(non_null int)
             ~args:Arg.[]
             ~resolve:(fun _ game_rating -> game_rating.rating);
-        ]))
+        ])
 
 let member =
   Graphql_lwt.Schema.(
     obj "member" ~doc:"A member of OCaml Game Geek.  Members can rate games."
-      ~fields:(fun _ ->
+      ~fields:
         [
           field "member_id" ~typ:(non_null int)
             ~args:Arg.[]
@@ -149,14 +152,14 @@ let member =
               with
               | [] -> Some []
               | ratings -> Some ratings);
-        ]))
+        ])
 
 let ogg_schema =
   Graphql_lwt.Schema.(
     schema ~query_name:"OCamlGameGeekQuery"
       [
         field "game" ~doc:"Select a BoardGame by its unique id, if it exists."
-          ~typ:Lazy.(force board_game)
+          ~typ:board_game
           ~args:Arg.[ arg "id" ~typ:int ]
           ~resolve:(fun _ () id ->
             match id with None -> None | Some id' -> get_game_by_id id');
@@ -170,7 +173,7 @@ let ogg_schema =
             | None -> None
             | Some member_id' -> get_member_by_id member_id');
         field "games" ~doc:"Get all BoardGames"
-          ~typ:(non_null (list Lazy.(force board_game)))
+          ~typ:(non_null (list board_game))
           ~args:Arg.[]
           ~resolve:(fun _ () ->
             Seq.fold_left (fun acc x -> Some (snd x) :: acc) [] get_all_games);
@@ -180,7 +183,7 @@ let ogg_schema =
           ~resolve:(fun _ () ->
             Seq.fold_left (fun acc x -> Some (snd x) :: acc) [] get_all_members);
         field "designers" ~doc:"Get all designers"
-          ~typ:(non_null (list Lazy.(force designer)))
+          ~typ:(non_null (list designer))
           ~args:Arg.[]
           ~resolve:(fun _ () ->
             Seq.fold_left
@@ -194,7 +197,7 @@ let ogg_schema =
             ~doc:
               "Establishes a rating of a board game, by a Member. On success \
                (the game and member both exist), selects the BoardGame."
-            ~typ:Lazy.(force board_game)
+            ~typ:board_game
             ~args:
               Arg.
                 [

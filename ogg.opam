@@ -9,6 +9,6 @@ maintainer: "Michael Terrell <cwithmichael@gmail.com>"
 depends: [
     "ocaml" {>= "4.10.0"}
     "dune" {>= "2.9.0"}
-    "graphql-lwt" {= "0.13.0"}
+    "graphql-lwt" {= "0.14.0"}
     "dream" {= "1.0.0~alpha4"}
 ]
