@@ -10,7 +10,14 @@ OCaml Game Geek is centered around building a GraphQL server that mimics some of
 
 ## How to run
 
-### npm
+### opam
+> opam install . --deps-only
+
+> opam exec -- dune build
+
+> ./_build/default/ogg_server.exe
+
+### Or npm / esy
 > npm install esy && npx esy
 
 > npx esy start
